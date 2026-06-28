@@ -1,4 +1,5 @@
 export const gameState = {
+  mapId: "test_map",
   players: [
     {
       id: "player-1",

@@ -1,6 +1,6 @@
 # Spelarkitektur
 
-Det här dokumentet beskriver hur projektet ska hållas organiserat när spelet byggs vidare. Syftet är att göra koden enkel att förstå, ändra och utöka utan att blanda ihop data, spelregler, rendering och aktivt game state.
+Det här dokumentet beskriver hur projektet ska hållas organiserat när spelet byggs vidare. Syftet är att göra koden enkel att förstå, ändra och utöka utan att blanda ihop data, spelregler, rendering, controller-logik och aktivt game state.
 
 ## 1. Projektets mål
 
@@ -24,6 +24,7 @@ Boardgame/
     terrain.js
     units.js
   systems/
+    controller.js
     engine.js
     gameState.js
     hexGrid.js
@@ -32,7 +33,7 @@ Boardgame/
     renderer.js
 ```
 
-`index.html`, `style.css` och `main.js` är projektets startpunkt. Data ligger i `data/`. Spelmotor, game state, kartlogik och rendering ligger i `systems/`.
+`index.html`, `style.css` och `main.js` är projektets startpunkt. Data ligger i `data/`. Controller, spelmotor, game state, kartlogik och rendering ligger i `systems/`.
 
 ## 3. Teknikval
 
@@ -85,9 +86,23 @@ En entity i game state ska minst ha:
 - `ownerId`
 - `position { q, r }`
 
-## 6. Engine
+## 6. Controller
 
-`systems/engine.js` är spelmotor/controller för prototypen.
+`systems/controller.js` är interaction controller-lagret.
+
+Controller ska översätta UI-händelser till engine-anrop. Exempel:
+
+- `onHexClicked(q, r)` anropar engine för att välja hex.
+- `onEntityClicked(entityId)` anropar engine för att välja entity.
+- `onExportClicked()` hanterar exportkommandot och loggar JSON.
+
+Renderer ska inte själv bestämma vad klick betyder. Renderer får bara fånga UI-händelser och skicka dem vidare till controller via callbacks.
+
+Controller får inte kringgå engine för game state-mutering. Om en UI-händelse ska ändra state ska controller anropa engine.
+
+## 7. Engine
+
+`systems/engine.js` är spelmotorn för prototypen.
 
 All mutering av game state ska gå via engine-funktioner, till exempel:
 
@@ -97,7 +112,7 @@ All mutering av game state ska gå via engine-funktioner, till exempel:
 
 Ingen multiplayer, stridslogik eller avancerad regelmotor krävs ännu. När sådan logik läggs till ska den ligga i engine eller separata systemfiler, inte i renderer.
 
-## 7. Renderer-regler
+## 8. Renderer-regler
 
 Inga spelregler ska hårdkodas i `systems/renderer.js`.
 
@@ -108,11 +123,11 @@ Inga spelregler ska hårdkodas i `systems/renderer.js`.
 - Att visa aktuell UI-information
 - Att koppla UI-händelser vidare till callbacks, till exempel `onHexClick` och `onEntityClick`
 
-Renderer får aldrig ändra game state direkt. Renderer får bara läsa state och skicka användarhändelser vidare till engine/controller.
+Renderer får aldrig ändra game state direkt. Renderer får bara läsa state och skicka användarhändelser vidare till controller.
 
-`renderer.js` ska inte avgöra om ett drag är giltigt, hur långt en entity får röra sig, vem som vinner en strid eller hur regler tolkas. Sådan logik ska ligga i engine eller separata systemfiler.
+`renderer.js` ska inte avgöra om ett drag är giltigt, hur långt en entity får röra sig, vem som vinner en strid eller hur regler tolkas. Sådan logik ska ligga i controller, engine eller separata systemfiler beroende på ansvar.
 
-## 8. HexGrid-ansvar
+## 9. HexGrid-ansvar
 
 `systems/hexGrid.js` ansvarar för hex-koordinater, placering och kartlogik.
 
@@ -128,14 +143,15 @@ Exempel på ansvar:
 
 Rendering kan använda resultat från `hexGrid.js`, men själva kunskapen om hex-koordinater ska ligga i `hexGrid.js`.
 
-## 9. Praktisk regel framåt
+## 10. Praktisk regel framåt
 
 När ny funktionalitet läggs till:
 
 1. Lägg statiska definitioner i `data/`.
 2. Lägg aktivt game state i `systems/gameState.js`.
 3. Lägg game state-mutering i `systems/engine.js`.
-4. Lägg spel- och kartlogik i tydliga moduler under `systems/`.
-5. Låt `renderer.js` rita det den får in och skicka klick vidare.
-6. Håll aktivt game state separat från definitioner.
-7. Undvik att lägga spelregler direkt i UI-koden.
+4. Lägg UI-händelseöversättning i `systems/controller.js`.
+5. Lägg spel- och kartlogik i tydliga moduler under `systems/`.
+6. Låt `renderer.js` rita det den får in och skicka klick vidare.
+7. Håll aktivt game state separat från definitioner.
+8. Undvik att lägga spelregler direkt i UI-koden.

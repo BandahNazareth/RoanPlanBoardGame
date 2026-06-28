@@ -1,10 +1,8 @@
-import { axialToPixel, hexId, hexPoints, HEX_SIZE } from "./hexGrid.js";
-
 const SVG_NS = "http://www.w3.org/2000/svg";
 
 export function renderMap({
   container,
-  hexes,
+  map,
   entities,
   selectedHexId,
   onHexClick,
@@ -12,16 +10,9 @@ export function renderMap({
 }) {
   container.replaceChildren();
 
-  const bounds = getBounds(hexes);
-  const padding = HEX_SIZE + 32;
-  const width = bounds.maxX - bounds.minX + padding * 2;
-  const height = bounds.maxY - bounds.minY + padding * 2;
-  const offsetX = padding - bounds.minX;
-  const offsetY = padding - bounds.minY;
-
   const svg = createSvg("svg", {
     class: "hex-map",
-    viewBox: `0 0 ${width} ${height}`,
+    viewBox: `0 0 ${map.width} ${map.height}`,
     role: "img",
     "aria-label": "Klickbar hexagon-karta",
   });
@@ -29,28 +20,26 @@ export function renderMap({
   const hexLayer = createSvg("g", { class: "hex-layer" });
   const entityLayer = createSvg("g", { class: "entity-layer" });
 
-  hexes.forEach((hex) => {
-    const center = getHexCenter(hex.q, hex.r, offsetX, offsetY);
-    const id = hexId(hex.q, hex.r);
+  map.hexes.forEach((hex) => {
     const polygon = createSvg("polygon", {
-      class: id === selectedHexId ? "hex is-selected" : "hex",
-      points: hexPoints(center.x, center.y),
+      class: hex.id === selectedHexId ? "hex is-selected" : "hex",
+      points: hex.points,
       tabindex: "0",
-      "data-hex-id": id,
-      "aria-label": `Hex ${id}`,
+      "data-hex-id": hex.id,
+      "aria-label": `Hex ${hex.id}`,
     });
     const label = createSvg("text", {
       class: "hex-label",
-      x: center.x,
-      y: center.y,
+      x: hex.center.x,
+      y: hex.center.y,
     });
 
-    label.textContent = id;
-    polygon.addEventListener("click", () => onHexClick(hex));
+    label.textContent = hex.id;
+    polygon.addEventListener("click", () => onHexClick(hex.q, hex.r));
     polygon.addEventListener("keydown", (event) => {
       if (event.key === "Enter" || event.key === " ") {
         event.preventDefault();
-        onHexClick(hex);
+        onHexClick(hex.q, hex.r);
       }
     });
 
@@ -58,16 +47,19 @@ export function renderMap({
   });
 
   entities.forEach((entity) => {
-    const center = getHexCenter(
-      entity.position.q,
-      entity.position.r,
-      offsetX,
-      offsetY
+    const hex = map.hexes.find(
+      (candidate) =>
+        candidate.q === entity.position.q && candidate.r === entity.position.r
     );
+
+    if (!hex) {
+      return;
+    }
+
     const marker = createSvg("g", {
       class: "entity",
       tabindex: "0",
-      transform: `translate(${center.x} ${center.y})`,
+      transform: `translate(${hex.center.x} ${hex.center.y})`,
       "aria-label": entity.definition.name,
     });
     const circle = createSvg("circle", { r: 22 });
@@ -77,12 +69,12 @@ export function renderMap({
     marker.append(circle, label);
     marker.addEventListener("click", (event) => {
       event.stopPropagation();
-      onEntityClick(entity);
+      onEntityClick(entity.id);
     });
     marker.addEventListener("keydown", (event) => {
       if (event.key === "Enter" || event.key === " ") {
         event.preventDefault();
-        onEntityClick(entity);
+        onEntityClick(entity.id);
       }
     });
 
@@ -100,11 +92,10 @@ export function renderEntityInfo(panel, entity) {
   }
 
   const { definition } = entity;
-  const { q, r } = entity.position;
 
   panel.innerHTML = `
     <article class="entity-card">
-      <p class="entity-meta">${definition.type} | Hex ${hexId(q, r)}</p>
+      <p class="entity-meta">${definition.type} | Hex ${entity.hexId}</p>
       <h3>${definition.name}</h3>
       <p>${definition.description}</p>
       <div class="stats" aria-label="Entityvärden">
@@ -114,29 +105,6 @@ export function renderEntityInfo(panel, entity) {
       </div>
     </article>
   `;
-}
-
-function getHexCenter(q, r, offsetX, offsetY) {
-  const point = axialToPixel(q, r);
-  return {
-    x: point.x + offsetX,
-    y: point.y + offsetY,
-  };
-}
-
-function getBounds(hexes) {
-  return hexes.reduce(
-    (bounds, hex) => {
-      const point = axialToPixel(hex.q, hex.r);
-      return {
-        minX: Math.min(bounds.minX, point.x),
-        maxX: Math.max(bounds.maxX, point.x),
-        minY: Math.min(bounds.minY, point.y),
-        maxY: Math.max(bounds.maxY, point.y),
-      };
-    },
-    { minX: Infinity, maxX: -Infinity, minY: Infinity, maxY: -Infinity }
-  );
 }
 
 function createSvg(tagName, attributes = {}) {

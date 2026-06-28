@@ -1,6 +1,11 @@
 import { gameState } from "./gameState.js";
+import { hasHex } from "./mapSystem.js";
 
 export function selectHex(q, r) {
+  if (!hasHex(q, r)) {
+    return;
+  }
+
   gameState.selectedHex = { q, r };
   gameState.selectedEntityId = null;
 }
@@ -19,7 +24,7 @@ export function selectEntity(entityId) {
 export function moveEntity(entityId, q, r) {
   const entity = getEntity(entityId);
 
-  if (!entity) {
+  if (!entity || !hasHex(q, r)) {
     return;
   }
 

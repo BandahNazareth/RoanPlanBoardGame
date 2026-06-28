@@ -1,7 +1,11 @@
 import { entityDefinitions } from "./data/tokens.js";
-import { exportGameState, gameState } from "./systems/gameState.js";
-import { selectEntity, selectHex } from "./systems/engine.js";
-import { createHexGrid, hexId } from "./systems/hexGrid.js";
+import { gameState } from "./systems/gameState.js";
+import {
+  onEntityClicked,
+  onExportClicked,
+  onHexClicked,
+} from "./systems/controller.js";
+import { getHex, getHexId, getRenderableHexes } from "./systems/mapSystem.js";
 import { renderEntityInfo, renderMap } from "./systems/renderer.js";
 
 const mapElement = document.querySelector("#map");
@@ -9,15 +13,14 @@ const infoPanel = document.querySelector("#infoPanel");
 const selectionText = document.querySelector("#selectionText");
 const exportButton = document.querySelector("#exportGameState");
 
-const hexes = createHexGrid(3);
-
 function draw() {
+  const map = getRenderableHexes();
   const entities = getEntityViews();
   const selectedEntity = getSelectedEntityView(entities);
 
   renderMap({
     container: mapElement,
-    hexes,
+    map,
     entities,
     selectedHexId: getSelectedHexId(),
     onHexClick: handleHexClick,
@@ -27,14 +30,21 @@ function draw() {
   renderEntityInfo(infoPanel, selectedEntity);
 }
 
-function handleHexClick(hex) {
-  selectHex(hex.q, hex.r);
+function handleHexClick(q, r) {
+  onHexClicked(q, r);
   selectionText.textContent = `Vald hex: ${getSelectedHexId()}`;
   draw();
 }
 
-function handleEntityClick(entity) {
-  selectEntity(entity.id);
+function handleEntityClick(entityId) {
+  onEntityClicked(entityId);
+  const entity = getEntityViews().find((candidate) => candidate.id === entityId);
+
+  if (!entity) {
+    draw();
+    return;
+  }
+
   selectionText.textContent = `Vald entity: ${entity.definition.name}`;
   draw();
 }
@@ -53,6 +63,7 @@ function getEntityViews() {
       return {
         ...entity,
         definition,
+        hexId: getHexId(entity.position.q, entity.position.r),
       };
     })
     .filter(Boolean);
@@ -71,12 +82,14 @@ function getSelectedHexId() {
     return null;
   }
 
-  return hexId(gameState.selectedHex.q, gameState.selectedHex.r);
+  const hex = getHex(gameState.selectedHex.q, gameState.selectedHex.r);
+
+  return hex ? getHexId(hex.q, hex.r) : null;
 }
 
 if (exportButton) {
   exportButton.addEventListener("click", () => {
-    console.log(exportGameState());
+    onExportClicked();
   });
 }
 
