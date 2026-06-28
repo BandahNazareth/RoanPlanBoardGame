@@ -5,10 +5,10 @@ const SVG_NS = "http://www.w3.org/2000/svg";
 export function renderMap({
   container,
   hexes,
-  tokens,
+  entities,
   selectedHexId,
   onHexClick,
-  onTokenClick,
+  onEntityClick,
 }) {
   container.replaceChildren();
 
@@ -27,7 +27,7 @@ export function renderMap({
   });
 
   const hexLayer = createSvg("g", { class: "hex-layer" });
-  const tokenLayer = createSvg("g", { class: "token-layer" });
+  const entityLayer = createSvg("g", { class: "entity-layer" });
 
   hexes.forEach((hex) => {
     const center = getHexCenter(hex.q, hex.r, offsetX, offsetY);
@@ -57,52 +57,60 @@ export function renderMap({
     hexLayer.append(polygon, label);
   });
 
-  tokens.forEach((token) => {
-    const center = getHexCenter(token.q, token.r, offsetX, offsetY);
+  entities.forEach((entity) => {
+    const center = getHexCenter(
+      entity.position.q,
+      entity.position.r,
+      offsetX,
+      offsetY
+    );
     const marker = createSvg("g", {
-      class: "token",
+      class: "entity",
       tabindex: "0",
       transform: `translate(${center.x} ${center.y})`,
-      "aria-label": token.name,
+      "aria-label": entity.definition.name,
     });
     const circle = createSvg("circle", { r: 22 });
     const label = createSvg("text", { y: 1 });
 
-    label.textContent = token.shortName;
+    label.textContent = entity.definition.shortName;
     marker.append(circle, label);
     marker.addEventListener("click", (event) => {
       event.stopPropagation();
-      onTokenClick(token);
+      onEntityClick(entity);
     });
     marker.addEventListener("keydown", (event) => {
       if (event.key === "Enter" || event.key === " ") {
         event.preventDefault();
-        onTokenClick(token);
+        onEntityClick(entity);
       }
     });
 
-    tokenLayer.append(marker);
+    entityLayer.append(marker);
   });
 
-  svg.append(hexLayer, tokenLayer);
+  svg.append(hexLayer, entityLayer);
   container.append(svg);
 }
 
-export function renderTokenInfo(panel, token) {
-  if (!token) {
-    panel.innerHTML = '<p class="empty-state">Ingen token vald.</p>';
+export function renderEntityInfo(panel, entity) {
+  if (!entity) {
+    panel.innerHTML = '<p class="empty-state">Ingen entity vald.</p>';
     return;
   }
 
+  const { definition } = entity;
+  const { q, r } = entity.position;
+
   panel.innerHTML = `
-    <article class="token-card">
-      <p class="token-meta">${token.type} | Hex ${hexId(token.q, token.r)}</p>
-      <h3>${token.name}</h3>
-      <p>${token.description}</p>
-      <div class="stats" aria-label="Tokenvärden">
-        <div class="stat"><span>Attack</span><strong>${token.stats.attack}</strong></div>
-        <div class="stat"><span>Försvar</span><strong>${token.stats.defense}</strong></div>
-        <div class="stat"><span>Rörelse</span><strong>${token.stats.movement}</strong></div>
+    <article class="entity-card">
+      <p class="entity-meta">${definition.type} | Hex ${hexId(q, r)}</p>
+      <h3>${definition.name}</h3>
+      <p>${definition.description}</p>
+      <div class="stats" aria-label="Entityvärden">
+        <div class="stat"><span>Attack</span><strong>${definition.stats.attack}</strong></div>
+        <div class="stat"><span>Försvar</span><strong>${definition.stats.defense}</strong></div>
+        <div class="stat"><span>Rörelse</span><strong>${definition.stats.movement}</strong></div>
       </div>
     </article>
   `;

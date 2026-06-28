@@ -11,15 +11,18 @@
       <section class="board-area" aria-label="Spelkarta">
         <div class="map-header">
           <h1>Roan's Plan</h1>
-          <p id="selectionText">Klicka på en hexruta eller token.</p>
+          <div class="map-actions">
+            <p id="selectionText">Klicka på en hexruta eller entity.</p>
+            <button id="exportGameState" type="button">Exportera game state</button>
+          </div>
         </div>
         <div id="map" class="map" aria-label="Hexagon-karta"></div>
       </section>
 
-      <aside class="side-panel" aria-label="Tokeninformation">
+      <aside class="side-panel" aria-label="Entityinformation">
         <h2>Info</h2>
         <div id="infoPanel" class="info-panel">
-          <p class="empty-state">Ingen token vald.</p>
+          <p class="empty-state">Ingen entity vald.</p>
         </div>
       </aside>
     </main>

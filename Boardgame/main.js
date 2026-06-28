@@ -1,43 +1,83 @@
-import { tokens } from "./data/tokens.js";
+import { entityDefinitions } from "./data/tokens.js";
+import { exportGameState, gameState } from "./systems/gameState.js";
+import { selectEntity, selectHex } from "./systems/engine.js";
 import { createHexGrid, hexId } from "./systems/hexGrid.js";
-import { renderMap, renderTokenInfo } from "./systems/renderer.js";
+import { renderEntityInfo, renderMap } from "./systems/renderer.js";
 
 const mapElement = document.querySelector("#map");
 const infoPanel = document.querySelector("#infoPanel");
 const selectionText = document.querySelector("#selectionText");
+const exportButton = document.querySelector("#exportGameState");
 
-const state = {
-  hexes: createHexGrid(3),
-  tokens,
-  selectedHexId: null,
-  selectedToken: null,
-};
+const hexes = createHexGrid(3);
 
 function draw() {
+  const entities = getEntityViews();
+  const selectedEntity = getSelectedEntityView(entities);
+
   renderMap({
     container: mapElement,
-    hexes: state.hexes,
-    tokens: state.tokens,
-    selectedHexId: state.selectedHexId,
-    onHexClick: selectHex,
-    onTokenClick: selectToken,
+    hexes,
+    entities,
+    selectedHexId: getSelectedHexId(),
+    onHexClick: handleHexClick,
+    onEntityClick: handleEntityClick,
   });
 
-  renderTokenInfo(infoPanel, state.selectedToken);
+  renderEntityInfo(infoPanel, selectedEntity);
 }
 
-function selectHex(hex) {
-  state.selectedHexId = hexId(hex.q, hex.r);
-  state.selectedToken = null;
-  selectionText.textContent = `Vald hex: ${state.selectedHexId}`;
+function handleHexClick(hex) {
+  selectHex(hex.q, hex.r);
+  selectionText.textContent = `Vald hex: ${getSelectedHexId()}`;
   draw();
 }
 
-function selectToken(token) {
-  state.selectedHexId = hexId(token.q, token.r);
-  state.selectedToken = token;
-  selectionText.textContent = `Vald token: ${token.name}`;
+function handleEntityClick(entity) {
+  selectEntity(entity.id);
+  selectionText.textContent = `Vald entity: ${entity.definition.name}`;
   draw();
+}
+
+function getEntityViews() {
+  return gameState.entities
+    .map((entity) => {
+      const definition = entityDefinitions.find(
+        (candidate) => candidate.id === entity.definitionId
+      );
+
+      if (!definition) {
+        return null;
+      }
+
+      return {
+        ...entity,
+        definition,
+      };
+    })
+    .filter(Boolean);
+}
+
+function getSelectedEntityView(entities) {
+  if (!gameState.selectedEntityId) {
+    return null;
+  }
+
+  return entities.find((entity) => entity.id === gameState.selectedEntityId);
+}
+
+function getSelectedHexId() {
+  if (!gameState.selectedHex) {
+    return null;
+  }
+
+  return hexId(gameState.selectedHex.q, gameState.selectedHex.r);
+}
+
+if (exportButton) {
+  exportButton.addEventListener("click", () => {
+    console.log(exportGameState());
+  });
 }
 
 draw();

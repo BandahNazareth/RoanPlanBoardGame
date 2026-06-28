@@ -8,8 +8,8 @@
   --hex: #dfe7d5;
   --hex-hover: #d1dfc3;
   --hex-selected: #f2d27a;
-  --token: #2d6a7f;
-  --token-ring: #f7f3dd;
+  --entity: #2d6a7f;
+  --entity-ring: #f7f3dd;
 }
 
 * {
@@ -45,6 +45,25 @@ body {
   margin-bottom: 16px;
 }
 
+.map-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+button {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--text);
+  cursor: pointer;
+  font: inherit;
+  padding: 8px 12px;
+}
+
+button:hover {
+  background: white;
+}
+
 h1,
 h2,
 p {
@@ -64,7 +83,7 @@ h2 {
 
 .map-header p,
 .empty-state,
-.token-meta {
+.entity-meta {
   color: var(--muted);
 }
 
@@ -107,17 +126,17 @@ h2 {
   dominant-baseline: middle;
 }
 
-.token {
+.entity {
   cursor: pointer;
 }
 
-.token circle {
-  fill: var(--token);
-  stroke: var(--token-ring);
+.entity circle {
+  fill: var(--entity);
+  stroke: var(--entity-ring);
   stroke-width: 4;
 }
 
-.token text {
+.entity text {
   fill: white;
   font-size: 16px;
   font-weight: 700;
@@ -137,12 +156,12 @@ h2 {
   gap: 14px;
 }
 
-.token-card {
+.entity-card {
   display: grid;
   gap: 12px;
 }
 
-.token-card h3 {
+.entity-card h3 {
   margin: 0;
   font-size: 24px;
   line-height: 1.15;
@@ -187,6 +206,11 @@ h2 {
   }
 
   .map-header {
+    align-items: start;
+    flex-direction: column;
+  }
+
+  .map-actions {
     align-items: start;
     flex-direction: column;
   }

@@ -1,12 +1,12 @@
-export const tokens = [
+export const entityTypes = ["unit", "hero", "stronghold", "terrain"];
+
+export const entityDefinitions = [
   {
     id: "test-warden",
     name: "Test Warden",
     shortName: "TW",
-    type: "Hero",
-    q: 0,
-    r: 0,
-    description: "En test-token placerad i mitten av kartan.",
+    type: "hero",
+    description: "En test-entity placerad i mitten av kartan.",
     stats: {
       attack: 2,
       defense: 3,
