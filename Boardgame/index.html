@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="sv">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Hex Boardgame Prototype</title>
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="board-area" aria-label="Spelkarta">
+        <div class="map-header">
+          <h1>Roan's Plan</h1>
+          <p id="selectionText">Klicka på en hexruta eller token.</p>
+        </div>
+        <div id="map" class="map" aria-label="Hexagon-karta"></div>
+      </section>
+
+      <aside class="side-panel" aria-label="Tokeninformation">
+        <h2>Info</h2>
+        <div id="infoPanel" class="info-panel">
+          <p class="empty-state">Ingen token vald.</p>
+        </div>
+      </aside>
+    </main>
+
+    <script type="module" src="main.js"></script>
+  </body>
+</html>

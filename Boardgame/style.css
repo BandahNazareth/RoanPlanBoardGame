@@ -1,0 +1,197 @@
+:root {
+  color-scheme: light;
+  --bg: #eef1ec;
+  --panel: #fbfbf7;
+  --line: #c5cabc;
+  --text: #20241f;
+  --muted: #677064;
+  --hex: #dfe7d5;
+  --hex-hover: #d1dfc3;
+  --hex-selected: #f2d27a;
+  --token: #2d6a7f;
+  --token-ring: #f7f3dd;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: Arial, Helvetica, sans-serif;
+  color: var(--text);
+  background: var(--bg);
+}
+
+.app-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  min-height: 100vh;
+}
+
+.board-area {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 24px;
+}
+
+.map-header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+h1,
+h2,
+p {
+  margin: 0;
+}
+
+h1 {
+  font-size: 28px;
+  line-height: 1.1;
+}
+
+h2 {
+  font-size: 20px;
+  line-height: 1.2;
+  margin-bottom: 16px;
+}
+
+.map-header p,
+.empty-state,
+.token-meta {
+  color: var(--muted);
+}
+
+.map {
+  flex: 1;
+  min-height: 520px;
+  overflow: auto;
+  border: 1px solid var(--line);
+  background: #f6f7f2;
+}
+
+.hex-map {
+  display: block;
+  min-width: 760px;
+  min-height: 560px;
+}
+
+.hex {
+  fill: var(--hex);
+  stroke: #8b967f;
+  stroke-width: 2;
+  cursor: pointer;
+  transition: fill 120ms ease, filter 120ms ease;
+}
+
+.hex:hover {
+  fill: var(--hex-hover);
+  filter: brightness(1.02);
+}
+
+.hex.is-selected {
+  fill: var(--hex-selected);
+}
+
+.hex-label {
+  fill: #606b5b;
+  font-size: 11px;
+  pointer-events: none;
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+
+.token {
+  cursor: pointer;
+}
+
+.token circle {
+  fill: var(--token);
+  stroke: var(--token-ring);
+  stroke-width: 4;
+}
+
+.token text {
+  fill: white;
+  font-size: 16px;
+  font-weight: 700;
+  pointer-events: none;
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+
+.side-panel {
+  border-left: 1px solid var(--line);
+  background: var(--panel);
+  padding: 24px;
+}
+
+.info-panel {
+  display: grid;
+  gap: 14px;
+}
+
+.token-card {
+  display: grid;
+  gap: 12px;
+}
+
+.token-card h3 {
+  margin: 0;
+  font-size: 24px;
+  line-height: 1.15;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.stat {
+  border: 1px solid var(--line);
+  padding: 10px;
+  background: white;
+}
+
+.stat span {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+
+.stat strong {
+  font-size: 18px;
+}
+
+@media (max-width: 780px) {
+  .app-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .board-area,
+  .side-panel {
+    padding: 16px;
+  }
+
+  .side-panel {
+    border-left: 0;
+    border-top: 1px solid var(--line);
+  }
+
+  .map-header {
+    align-items: start;
+    flex-direction: column;
+  }
+
+  .map {
+    min-height: 420px;
+  }
+}
