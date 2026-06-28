@@ -81,8 +81,11 @@ Suggested functions:
 | `getTerrain(q, r)` | Returns terrain data for a hex. |
 | `getOccupants(q, r)` | Returns entities located on a hex. |
 | `isOccupied(q, r)` | Returns true if the hex contains entities. |
-| `getRenderableHexes()` | Returns map hex data prepared for visual rendering. |
+| `getMapData()` | Returns current map data and hex coordinates. |
 | `getHexId(q, r)` | Returns the coordinate id string for a hex. |
+| `getHexForEntity(entity)` | Returns the hex occupied by an entity. |
+
+The Map System returns map and hex data only. The Renderer is responsible for creating SVG geometry such as polygon points, centers, and viewBox dimensions for display.
 
 Future functions:
 

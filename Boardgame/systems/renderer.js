@@ -1,4 +1,6 @@
 const SVG_NS = "http://www.w3.org/2000/svg";
+const HEX_SIZE = 48;
+const SQRT_3 = Math.sqrt(3);
 
 export function renderMap({
   container,
@@ -10,9 +12,10 @@ export function renderMap({
 }) {
   container.replaceChildren();
 
+  const renderGeometry = createRenderGeometry(map.hexes);
   const svg = createSvg("svg", {
     class: "hex-map",
-    viewBox: `0 0 ${map.width} ${map.height}`,
+    viewBox: `0 0 ${renderGeometry.width} ${renderGeometry.height}`,
     role: "img",
     "aria-label": "Klickbar hexagon-karta",
   });
@@ -20,7 +23,7 @@ export function renderMap({
   const hexLayer = createSvg("g", { class: "hex-layer" });
   const entityLayer = createSvg("g", { class: "entity-layer" });
 
-  map.hexes.forEach((hex) => {
+  renderGeometry.hexes.forEach((hex) => {
     const polygon = createSvg("polygon", {
       class: hex.id === selectedHexId ? "hex is-selected" : "hex",
       points: hex.points,
@@ -47,10 +50,7 @@ export function renderMap({
   });
 
   entities.forEach((entity) => {
-    const hex = map.hexes.find(
-      (candidate) =>
-        candidate.q === entity.position.q && candidate.r === entity.position.r
-    );
+    const hex = renderGeometry.hexById.get(entity.hex.id);
 
     if (!hex) {
       return;
@@ -115,4 +115,64 @@ function createSvg(tagName, attributes = {}) {
   });
 
   return element;
+}
+
+function createRenderGeometry(hexes) {
+  const centers = hexes.map((hex) => ({
+    ...hex,
+    center: axialToPixel(hex.q, hex.r),
+  }));
+  const bounds = getBounds(centers);
+  const padding = HEX_SIZE + 32;
+  const offsetX = padding - bounds.minX;
+  const offsetY = padding - bounds.minY;
+  const renderHexes = centers.map((hex) => {
+    const center = {
+      x: hex.center.x + offsetX,
+      y: hex.center.y + offsetY,
+    };
+
+    return {
+      ...hex,
+      center,
+      points: getHexPoints(center.x, center.y),
+    };
+  });
+
+  return {
+    width: bounds.maxX - bounds.minX + padding * 2,
+    height: bounds.maxY - bounds.minY + padding * 2,
+    hexes: renderHexes,
+    hexById: new Map(renderHexes.map((hex) => [hex.id, hex])),
+  };
+}
+
+function axialToPixel(q, r, size = HEX_SIZE) {
+  return {
+    x: size * SQRT_3 * (q + r / 2),
+    y: size * 1.5 * r,
+  };
+}
+
+function getHexPoints(x, y, size = HEX_SIZE) {
+  const points = [];
+
+  for (let corner = 0; corner < 6; corner += 1) {
+    const angle = (Math.PI / 180) * (60 * corner - 30);
+    points.push(`${x + size * Math.cos(angle)},${y + size * Math.sin(angle)}`);
+  }
+
+  return points.join(" ");
+}
+
+function getBounds(hexes) {
+  return hexes.reduce(
+    (bounds, hex) => ({
+      minX: Math.min(bounds.minX, hex.center.x),
+      maxX: Math.max(bounds.maxX, hex.center.x),
+      minY: Math.min(bounds.minY, hex.center.y),
+      maxY: Math.max(bounds.maxY, hex.center.y),
+    }),
+    { minX: Infinity, maxX: -Infinity, minY: Infinity, maxY: -Infinity }
+  );
 }

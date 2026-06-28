@@ -15,6 +15,7 @@ export const gameState = {
       type: "hero",
       ownerId: "player-1",
       position: { q: 0, r: 0 },
+      state: {},
     },
   ],
   selectedHex: null,

@@ -27,7 +27,7 @@ Boardgame/
     controller.js
     engine.js
     gameState.js
-    hexGrid.js
+    mapSystem.js
     movement.js
     multiplayer.js
     renderer.js
@@ -127,21 +127,20 @@ Renderer får aldrig ändra game state direkt. Renderer får bara läsa state oc
 
 `renderer.js` ska inte avgöra om ett drag är giltigt, hur långt en entity får röra sig, vem som vinner en strid eller hur regler tolkas. Sådan logik ska ligga i controller, engine eller separata systemfiler beroende på ansvar.
 
-## 9. HexGrid-ansvar
+## 9. Map System-ansvar
 
-`systems/hexGrid.js` ansvarar för hex-koordinater, placering och kartlogik.
+`systems/mapSystem.js` ansvarar för hex-koordinater, kartdata och kartlogik.
 
 Exempel på ansvar:
 
 - Skapa hexrutor
 - Hantera axial- eller cube-koordinater
-- Räkna ut pixelpositioner för hexar
-- Räkna ut hexhörn för rendering
+- Returnera map- och hexdata
 - Hitta grannar
 - Mäta avstånd mellan hexar
 - Hantera kartrelaterade hjälpfunktioner
 
-Rendering kan använda resultat från `hexGrid.js`, men själva kunskapen om hex-koordinater ska ligga i `hexGrid.js`.
+Renderer kan använda map- och hexdata från `mapSystem.js`, men SVG-geometri som polygonpunkter och viewBox hör till renderer-lagret.
 
 ## 10. Praktisk regel framåt
 

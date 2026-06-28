@@ -5,7 +5,12 @@ import {
   onExportClicked,
   onHexClicked,
 } from "./systems/controller.js";
-import { getHex, getHexId, getRenderableHexes } from "./systems/mapSystem.js";
+import {
+  getHex,
+  getHexForEntity,
+  getHexId,
+  getMapData,
+} from "./systems/mapSystem.js";
 import { renderEntityInfo, renderMap } from "./systems/renderer.js";
 
 const mapElement = document.querySelector("#map");
@@ -14,7 +19,7 @@ const selectionText = document.querySelector("#selectionText");
 const exportButton = document.querySelector("#exportGameState");
 
 function draw() {
-  const map = getRenderableHexes();
+  const map = getMapData();
   const entities = getEntityViews();
   const selectedEntity = getSelectedEntityView(entities);
 
@@ -59,11 +64,17 @@ function getEntityViews() {
       if (!definition) {
         return null;
       }
+      const hex = getHexForEntity(entity);
+
+      if (!hex) {
+        return null;
+      }
 
       return {
         ...entity,
         definition,
-        hexId: getHexId(entity.position.q, entity.position.r),
+        hex,
+        hexId: hex.id,
       };
     })
     .filter(Boolean);

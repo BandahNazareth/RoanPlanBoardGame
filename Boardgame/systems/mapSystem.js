@@ -2,9 +2,6 @@ import { testMap } from "../data/maps/test_map.js";
 import { terrainDefinitions } from "../data/terrain.js";
 import { gameState } from "./gameState.js";
 
-export const HEX_SIZE = 48;
-
-const SQRT_3 = Math.sqrt(3);
 const MAPS = [testMap];
 const NEIGHBOR_DIRECTIONS = [
   { q: 1, r: 0 },
@@ -16,7 +13,11 @@ const NEIGHBOR_DIRECTIONS = [
 ];
 
 export function getHex(q, r) {
-  return getCurrentMap().hexes.find((hex) => hex.q === q && hex.r === r) || null;
+  const hex = getCurrentMap().hexes.find(
+    (candidate) => candidate.q === q && candidate.r === r
+  );
+
+  return hex ? formatHex(hex) : null;
 }
 
 export function hasHex(q, r) {
@@ -60,44 +61,28 @@ export function isOccupied(q, r) {
 }
 
 export function getMapHexes() {
-  return getCurrentMap().hexes;
+  return getCurrentMap().hexes.map(formatHex);
 }
 
-export function getRenderableHexes() {
-  const hexes = getMapHexes();
-  const centers = hexes.map((hex) => ({
-    ...hex,
-    id: getHexId(hex.q, hex.r),
-    center: axialToPixel(hex.q, hex.r),
-  }));
-  const bounds = getBounds(centers);
-  const padding = HEX_SIZE + 32;
-  const offsetX = padding - bounds.minX;
-  const offsetY = padding - bounds.minY;
-
+export function getMapData() {
+  const map = getCurrentMap();
   return {
-    width: bounds.maxX - bounds.minX + padding * 2,
-    height: bounds.maxY - bounds.minY + padding * 2,
-    hexes: centers.map((hex) => {
-      const center = {
-        x: hex.center.x + offsetX,
-        y: hex.center.y + offsetY,
-      };
-
-      return {
-        q: hex.q,
-        r: hex.r,
-        id: hex.id,
-        terrainId: hex.terrainId,
-        center,
-        points: getHexPoints(center.x, center.y),
-      };
-    }),
+    id: map.id,
+    name: map.name,
+    hexes: map.hexes.map(formatHex),
   };
 }
 
 export function getHexId(q, r) {
   return `${q},${r}`;
+}
+
+export function getHexForEntity(entity) {
+  if (!entity?.position) {
+    return null;
+  }
+
+  return getHex(entity.position.q, entity.position.r);
 }
 
 function getCurrentMap() {
@@ -110,32 +95,11 @@ function getCurrentMap() {
   return map;
 }
 
-function axialToPixel(q, r, size = HEX_SIZE) {
+function formatHex(hex) {
   return {
-    x: size * SQRT_3 * (q + r / 2),
-    y: size * 1.5 * r,
+    q: hex.q,
+    r: hex.r,
+    id: getHexId(hex.q, hex.r),
+    terrainId: hex.terrainId,
   };
-}
-
-function getHexPoints(x, y, size = HEX_SIZE) {
-  const points = [];
-
-  for (let corner = 0; corner < 6; corner += 1) {
-    const angle = (Math.PI / 180) * (60 * corner - 30);
-    points.push(`${x + size * Math.cos(angle)},${y + size * Math.sin(angle)}`);
-  }
-
-  return points.join(" ");
-}
-
-function getBounds(hexes) {
-  return hexes.reduce(
-    (bounds, hex) => ({
-      minX: Math.min(bounds.minX, hex.center.x),
-      maxX: Math.max(bounds.maxX, hex.center.x),
-      minY: Math.min(bounds.minY, hex.center.y),
-      maxY: Math.max(bounds.maxY, hex.center.y),
-    }),
-    { minX: Infinity, maxX: -Infinity, minY: Infinity, maxY: -Infinity }
-  );
 }
